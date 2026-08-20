@@ -1,11 +1,14 @@
-# Cozmic — parent theme
+# Cozmic Block Theme
 
 The shared block theme (Full Site Editing) behind every Cozmic client website.
 Per-client sites run as **child themes** that override `theme.json` and nothing
 else, so one design system serves the whole fleet.
 
 - **Requires:** WordPress 6.7+, PHP 8.2+
-- **Text domain / prefix:** `cozmic` / `cozmic_`
+- **Theme slug / directory:** `cozmic-block-theme` — must match everywhere, see
+  below
+- **Text domain:** `cozmic-block-theme` · **PHP prefix:** `cozmic_` ·
+  **Pattern namespace:** `cozmic/`
 - **Architecture + decisions:** `docs/wordpress-product-architecture.md` in the
   `cozmic-platform` repo. Read the decisions before changing structure — most of
   what looks arbitrary here is load-bearing.
@@ -68,14 +71,35 @@ Use `primary` as a fill with `on-primary` text on top; use `primary-ink` for
 brand-coloured text on a light background. That split is what keeps contrast
 readable for any client brand colour without hand-tuning.
 
+## The directory name is the theme slug
+
+WordPress derives the theme slug from the folder name under
+`wp-content/themes/`, and every child theme points at it via its `Template:`
+header. **The folder must be `cozmic-block-theme` everywhere it is deployed**,
+which is not the repo name — so never clone bare:
+
+```bash
+git clone <repo-url> cozmic-block-theme
+```
+
+A bare `git clone` names the folder after the repo and silently produces the
+wrong slug. Every child theme then declares:
+
+```
+Template: cozmic-block-theme
+```
+
+Getting this wrong once means editing that header on every client site, so it
+belongs in the provisioning script rather than in anyone's memory.
+
 ## Local setup
 
 There is no local environment by decision (D7) — development happens on a
 Cloudways staging app, validation on a dedicated canary site, and releases ship
 as GitHub Release tags consumed by Plugin Update Checker.
 
-To run it anywhere: drop the folder in `wp-content/themes/`, add the two font
-files, and activate.
+To run it anywhere: drop the folder in `wp-content/themes/` **named
+`cozmic-block-theme`**, add the two font files, and activate.
 
 ## Releasing
 

@@ -1,12 +1,17 @@
 <?php
 /**
- * Cozmic parent theme.
+ * Cozmic Block Theme — the parent theme.
  *
  * Presentation only. Anything that defines *what exists* — post types, meta,
  * roles, options — belongs in the Cozmic Core plugin, not here. A client who
  * switches themes must keep their content.
  *
- * @package Cozmic
+ * Naming: the theme slug and text domain are `cozmic-block-theme`; the PHP
+ * prefix stays the shorter `cozmic_`. Patterns use the `cozmic/` namespace
+ * deliberately — it is a Cozmic-wide library namespace, not this theme's, so
+ * Cozmic Core can register into it later without a second vocabulary.
+ *
+ * @package CozmicBlockTheme
  */
 
 declare( strict_types = 1 );
@@ -31,7 +36,7 @@ function cozmic_setup(): void {
 
 	add_editor_style( 'style.css' );
 
-	load_theme_textdomain( 'cozmic', get_template_directory() . '/languages' );
+	load_theme_textdomain( 'cozmic-block-theme', get_template_directory() . '/languages' );
 }
 add_action( 'after_setup_theme', 'cozmic_setup' );
 
@@ -43,7 +48,7 @@ add_action( 'after_setup_theme', 'cozmic_setup' );
  */
 function cozmic_enqueue_styles(): void {
 	wp_enqueue_style(
-		'cozmic',
+		'cozmic-block-theme',
 		get_template_directory_uri() . '/style.css',
 		array(),
 		COZMIC_THEME_VERSION
@@ -59,10 +64,10 @@ add_action( 'wp_enqueue_scripts', 'cozmic_enqueue_styles' );
  */
 function cozmic_register_pattern_categories(): void {
 	$categories = array(
-		'cozmic-header'   => __( 'Cozmic: Page headers', 'cozmic' ),
-		'cozmic-section'  => __( 'Cozmic: Sections', 'cozmic' ),
-		'cozmic-content'  => __( 'Cozmic: Content lists', 'cozmic' ),
-		'cozmic-cta'      => __( 'Cozmic: Calls to action', 'cozmic' ),
+		'cozmic-header'   => __( 'Cozmic: Page headers', 'cozmic-block-theme' ),
+		'cozmic-section'  => __( 'Cozmic: Sections', 'cozmic-block-theme' ),
+		'cozmic-content'  => __( 'Cozmic: Content lists', 'cozmic-block-theme' ),
+		'cozmic-cta'      => __( 'Cozmic: Calls to action', 'cozmic-block-theme' ),
 	);
 
 	foreach ( $categories as $slug => $label ) {
@@ -82,7 +87,7 @@ function cozmic_register_block_styles(): void {
 		'core/group',
 		array(
 			'name'  => 'cozmic-card',
-			'label' => __( 'Card', 'cozmic' ),
+			'label' => __( 'Card', 'cozmic-block-theme' ),
 		)
 	);
 
@@ -90,7 +95,7 @@ function cozmic_register_block_styles(): void {
 		'core/group',
 		array(
 			'name'  => 'cozmic-surface',
-			'label' => __( 'Surface panel', 'cozmic' ),
+			'label' => __( 'Surface panel', 'cozmic-block-theme' ),
 		)
 	);
 
@@ -98,7 +103,7 @@ function cozmic_register_block_styles(): void {
 		'core/details',
 		array(
 			'name'  => 'cozmic-faq',
-			'label' => __( 'FAQ item', 'cozmic' ),
+			'label' => __( 'FAQ item', 'cozmic-block-theme' ),
 		)
 	);
 }
