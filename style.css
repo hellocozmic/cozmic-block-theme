@@ -1,0 +1,49 @@
+/*
+Theme Name: Cozmic
+Theme URI: https://cozmiconline.com
+Author: Cozmic Online
+Author URI: https://cozmiconline.com
+Description: The Cozmic parent theme. A block theme (Full Site Editing) providing the shared design system, templates, and pattern library for every Cozmic client site. Per-client sites run as child themes that override theme.json only.
+Requires at least: 6.7
+Tested up to: 6.8
+Requires PHP: 8.2
+Version: 0.1.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: cozmic
+Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-logo, custom-menu, editor-style, featured-images, wide-blocks
+*/
+
+/*
+ * Design tokens live in theme.json, not here. This file carries only what
+ * theme.json cannot express.
+ *
+ * Keep it small. If a rule can be a theme.json style or a block style
+ * variation, it belongs there instead — Global Styles can then reach it and
+ * child themes can override it without touching CSS.
+ */
+
+/* Skip link — visible only on keyboard focus. */
+.skip-link:focus {
+	position: absolute;
+	z-index: 999999;
+	top: var(--wp--preset--spacing--30);
+	left: var(--wp--preset--spacing--30);
+	padding: var(--wp--preset--spacing--20) var(--wp--preset--spacing--30);
+	border-radius: 4px;
+	background-color: var(--wp--preset--color--base);
+	color: var(--wp--preset--color--contrast);
+	text-decoration: none;
+}
+
+/* Respect reduced-motion preferences globally. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
