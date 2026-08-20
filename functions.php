@@ -108,3 +108,40 @@ function cozmic_register_block_styles(): void {
 	);
 }
 add_action( 'init', 'cozmic_register_block_styles' );
+
+/**
+ * Self-hosted updates via GitHub Releases.
+ *
+ * Plugin Update Checker makes WordPress treat this theme exactly like one from
+ * wordpress.org: the update shows in Appearance > Themes and in the Updates
+ * screen, and WP's own auto-update toggle works on it.
+ *
+ * PUC prefers the latest GitHub *Release* over tags or branch tips, which is
+ * what makes release tagging the deliberate "tested and ready" gate - commits
+ * and pushes reach no client site until a Release exists. The version it
+ * compares against is the `Version:` header in style.css, so that header and
+ * COZMIC_THEME_VERSION must be bumped together with the tag.
+ *
+ * No release assets: the repo root *is* the theme root and there is no build
+ * step, so GitHub's auto-generated source zip is already a valid theme package.
+ * Files marked `export-ignore` in .gitattributes are excluded from it.
+ *
+ * The theme identity PUC updates comes from the *directory* basename, not the
+ * repo name - one more reason the folder must be `cozmic-block-theme`.
+ */
+function cozmic_init_update_checker(): void {
+	// Only the admin and cron ever consult update transients. Loading ~40
+	// classes on the front end would tax every client page render for nothing.
+	if ( ! is_admin() && ! wp_doing_cron() ) {
+		return;
+	}
+
+	require_once get_template_directory() . '/lib/plugin-update-checker/plugin-update-checker.php';
+
+	\YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/hellocozmic/cozmic-block-theme/',
+		get_template_directory() . '/style.css',
+		'cozmic-block-theme'
+	);
+}
+add_action( 'after_setup_theme', 'cozmic_init_update_checker' );

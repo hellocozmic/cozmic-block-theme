@@ -15,3 +15,10 @@
 *.ttf    binary
 *.otf    binary
 *.zip    binary
+
+# Keep development-only files out of the theme package clients receive.
+# Plugin Update Checker installs GitHub's auto-generated source zip, and that
+# zip honours export-ignore — so these never land in wp-content/themes.
+.gitattributes  export-ignore
+.gitignore      export-ignore
+.editorconfig   export-ignore

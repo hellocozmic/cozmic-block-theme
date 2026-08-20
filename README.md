@@ -103,7 +103,34 @@ To run it anywhere: drop the folder in `wp-content/themes/` **named
 
 ## Releasing
 
-Commit and develop freely. Nothing reaches client sites until a **GitHub Release
-is tagged** — that tag is the "tested and ready" gate, and it means the canary
-site has run it first. Bump `Version:` in `style.css` and `COZMIC_THEME_VERSION`
-in `functions.php` together.
+Updates reach client sites through **Plugin Update Checker** (vendored in
+`lib/plugin-update-checker/`, v5.7), which makes WordPress treat this theme
+exactly like one from wordpress.org - the update appears in Appearance > Themes
+and WP's own auto-update toggle works on it.
+
+PUC prefers the latest GitHub **Release** over tags or branch tips, and that is
+what makes tagging the deliberate gate: commit and push as freely as you like,
+and nothing reaches a client site until a Release exists.
+
+To ship:
+
+1. Bump `Version:` in `style.css` **and** `COZMIC_THEME_VERSION` in
+   `functions.php` - they must match. PUC compares against the `style.css`
+   header, so a forgotten bump means the update is silently never offered.
+2. Commit, push, then tag a GitHub Release.
+3. Sites pick it up within PUC's check window (~12h), or immediately via
+   Appearance > Themes > "Check for updates".
+
+No release assets are attached: the repo root *is* the theme root and there is no
+build step, so GitHub's auto-generated source zip is already a valid theme
+package. Files marked `export-ignore` in `.gitattributes` are excluded from it.
+
+**Until the first Release is tagged, PUC finds nothing.** That is expected, not a
+misconfiguration.
+
+**Keep auto-updates off on client sites at first.** A bad tag with auto-update on
+reaches every client simultaneously. Turn it on once the release process has some
+mileage and a populated canary site is testing releases before they ship.
+
+The theme identity PUC updates is the **directory basename**, not the repo name -
+one more reason the folder must be `cozmic-block-theme` everywhere.
