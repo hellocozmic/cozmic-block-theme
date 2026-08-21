@@ -23,7 +23,7 @@
 
 ?>
 <!-- wp:group {"align":"full","style":{"spacing":{"margin":{"top":"0","bottom":"0"},"padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"}}},"backgroundColor":"primary","textColor":"on-primary","layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull has-on-primary-color has-primary-background-color has-text-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)">
+<div class="boopp wp-block-group alignfull has-on-primary-color has-primary-background-color has-text-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)">
 	<!-- wp:heading {"textAlign":"center","level":2,"lock":{"move":true,"remove":true},"fontSize":"x-large"} -->
 	<h2 class="wp-block-heading has-text-align-center has-x-large-font-size">Ready to get started?</h2>
 	<!-- /wp:heading -->
