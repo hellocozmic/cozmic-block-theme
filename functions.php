@@ -91,6 +91,21 @@ function cozmic_register_block_styles(): void {
 		)
 	);
 
+	register_block_style(
+		'core/group',
+		array(
+			'name'  => 'cozmic-card-featured',
+			'label' => __( 'Card (featured)', 'cozmic-block-theme' ),
+		)
+	);
+
+	register_block_style(
+		'core/paragraph',
+		array(
+			'name'  => 'cozmic-pill',
+			'label' => __( 'Pill', 'cozmic-block-theme' ),
+		)
+	);
 }
 add_action( 'init', 'cozmic_register_block_styles' );
 
