@@ -7,6 +7,15 @@
  *
  * @package CozmicBlockTheme
  *
+ * The image ships a neutral placeholder from the theme rather than an empty
+ * upload box, so the pattern preview reads as a real layout and the client
+ * clicks Replace instead of hunting for the right aspect ratio. Rounded corners
+ * live in theme.json (styles.blocks.core/image), not in the block attributes -
+ * hand-written attributes are the main source of block-validation mismatches,
+ * and putting the radius in theme.json also makes it reachable from Global
+ * Styles. Aspect ratio is deliberately unset so a client's own photo is never
+ * force-cropped.
+ *
  * Locking: the columns are unlocked so a client can flip the image to the other
  * side or drop it entirely. The blocks *inside* each column are locked against
  * move/remove so the heading cannot be dragged away from its paragraph.
@@ -20,7 +29,7 @@
 		<!-- wp:column {"verticalAlignment":"center"} -->
 		<div class="wp-block-column is-vertically-aligned-center">
 			<!-- wp:heading {"lock":{"move":true,"remove":true},"fontSize":"x-large"} -->
-			<h2 class="wp-block-heading has-x-large-font-size">A quick word about us</h2>
+			<h2 class="wp-block-heading has-x-large-font-size">About us</h2>
 			<!-- /wp:heading -->
 
 			<!-- wp:paragraph {"lock":{"move":true,"remove":true},"fontSize":"large"} -->
@@ -31,7 +40,9 @@
 
 		<!-- wp:column {"verticalAlignment":"center"} -->
 		<div class="wp-block-column is-vertically-aligned-center">
-			<!-- wp:image {"aspectRatio":"4/3","scale":"cover","style":{"border":{"radius":"16px"}}} /-->
+			<!-- wp:image {"sizeSlug":"full","linkDestination":"none"} -->
+			<figure class="wp-block-image size-full"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/placeholder.svg" alt=""/></figure>
+			<!-- /wp:image -->
 		</div>
 		<!-- /wp:column -->
 	</div>

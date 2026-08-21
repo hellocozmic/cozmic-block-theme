@@ -356,6 +356,11 @@
 					"fontFamily": "var(--wp--preset--font-family--heading)",
 					"fontWeight": "600"
 				}
+			},
+			"core/image": {
+				"border": {
+					"radius": "16px"
+				}
 			}
 		}
 	},
