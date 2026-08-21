@@ -91,21 +91,6 @@ function cozmic_register_block_styles(): void {
 		)
 	);
 
-	register_block_style(
-		'core/group',
-		array(
-			'name'  => 'cozmic-surface',
-			'label' => __( 'Surface panel', 'cozmic-block-theme' ),
-		)
-	);
-
-	register_block_style(
-		'core/details',
-		array(
-			'name'  => 'cozmic-faq',
-			'label' => __( 'FAQ item', 'cozmic-block-theme' ),
-		)
-	);
 }
 add_action( 'init', 'cozmic_register_block_styles' );
 
