@@ -77,6 +77,39 @@ function cozmic_register_pattern_categories(): void {
 add_action( 'init', 'cozmic_register_pattern_categories' );
 
 /**
+ * Hide the content-list patterns when their post type is not there.
+ *
+ * The services, events, and portfolio patterns query post types that Cozmic
+ * Core registers, and Core only registers each one when that content type is
+ * switched on. Offering a pattern that can only ever render "Nothing here yet"
+ * is worse than not offering it: the client inserts it, sees an empty section,
+ * and reasonably concludes the theme is broken.
+ *
+ * Priority 20 puts this after WordPress auto-registers the theme's patterns
+ * from /patterns and after Core registers its post types on the same hook.
+ *
+ * Checking `post_type_exists` rather than asking Core directly means this also
+ * does the right thing when Core is missing altogether, and keeps the theme
+ * free of a hard dependency on a function from another artifact.
+ */
+function cozmic_unregister_absent_patterns(): void {
+	$patterns = array(
+		'cozmic/services'  => 'cozmic_service',
+		'cozmic/events'    => 'cozmic_event',
+		'cozmic/portfolio' => 'cozmic_project',
+	);
+
+	$registry = WP_Block_Patterns_Registry::get_instance();
+
+	foreach ( $patterns as $pattern => $post_type ) {
+		if ( ! post_type_exists( $post_type ) && $registry->is_registered( $pattern ) ) {
+			unregister_block_pattern( $pattern );
+		}
+	}
+}
+add_action( 'init', 'cozmic_unregister_absent_patterns', 20 );
+
+/**
  * Block style variations.
  *
  * Preferred over custom blocks (see docs D4): a style variation is core markup
