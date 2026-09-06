@@ -10,10 +10,12 @@
  * Built on core/details, which is a native <details>/<summary> element - it
  * expands with zero JavaScript, exactly like the platform template's FAQ block.
  *
- * NOTE: the platform emits FAQPage JSON-LD from this block's question/answer
- * pairs. Core will not do that on its own, so the equivalent belongs in Cozmic
- * Core as a hook that scans post content for details blocks. Until then this
- * pattern is visually right but structurally invisible to search engines.
+ * FAQPage JSON-LD comes from Cozmic Core, which scans the page for Details
+ * blocks and builds the structured data from their summaries and answers (see
+ * inc/seo.php there). Nothing in this pattern needs to opt in, and an FAQ a
+ * client composes by hand out of Details blocks is picked up the same way. Two
+ * pairs is the floor, so a single Details block stays an expandable note rather
+ * than being announced as an FAQ.
  */
 
 ?>
