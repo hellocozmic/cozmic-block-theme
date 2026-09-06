@@ -47,3 +47,19 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 		scroll-behavior: auto !important;
 	}
 }
+
+/*
+ * An optional bound link.
+ *
+ * A block template has no conditionals, so a button whose href comes from a
+ * field that may be empty would render as a dead, unclickable button. Cozmic
+ * Core's binding source leaves the template's own empty href in place when the
+ * field is unset, and this hides the button entirely in that case.
+ *
+ * :has() is the only way to style a parent from the state of its child, which
+ * is exactly why this rule cannot be a theme.json style or a block variation.
+ */
+.cz-optional-link:has(a[href=""]),
+.cz-optional-link:has(a:not([href])) {
+	display: none;
+}
