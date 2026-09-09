@@ -63,3 +63,136 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 .cz-optional-link:has(a:not([href])) {
 	display: none;
 }
+
+/*
+ * No gap between the header and the page.
+ *
+ * WordPress emits `:where(.wp-site-blocks) > * { margin-block-start: <blockGap> }`
+ * from theme.json, and zeroes it only on the *first* child. The header is
+ * first, so `main` collects a blockGap of dead space above whatever the page
+ * opens with - which is glaring when that is a full-bleed hero.
+ *
+ * This is CSS rather than a template edit because the margin lands on every
+ * template (eleven of them, plus any a child adds), and a `margin: 0` on each
+ * `main` group is eleven chances to forget one.
+ */
+:where(.wp-site-blocks) > main {
+	margin-block-start: 0;
+}
+
+/*
+ * Site logo sizing.
+ *
+ * The Site Logo block only exposes a *width*, so a tall or near-square logo
+ * sets its own height and can double the header. Constraining height with an
+ * auto width is what actually caps the header, and it cannot be said in
+ * theme.json - there is no style node for the logo image.
+ *
+ * The value is a `settings.custom` token so a child theme still owns it from
+ * theme.json alone: `"custom": { "logoMaxHeight": "75px" }` becomes
+ * `--wp--custom--logo-max-height`. That keeps children CSS-free.
+ */
+.wp-block-site-logo img {
+	max-height: var(--wp--custom--logo-max-height, 80px);
+	width: auto;
+}
+
+/*
+ * Sticky header.
+ *
+ * Applied to the template-part *wrapper*, not to the header group inside it.
+ * A sticky element can only travel within its own parent's box, and the
+ * wrapper is exactly as tall as the header - so making the inner group sticky
+ * (via `settings.position.sticky` and a `style.position` attribute, the route
+ * the editor offers) produces an element that is sticky and yet never moves.
+ * The wrapper is a direct child of `.wp-site-blocks`, which is the box worth
+ * sticking inside.
+ *
+ * `.cz-stuck` is added by assets/js/sticky-header.js once the header leaves
+ * the top of the page. With JS blocked the header is still sticky, it just
+ * never gains its shadow - which is the right way round for an enhancement.
+ */
+.wp-site-blocks > header.wp-block-template-part {
+	position: sticky;
+	z-index: 20;
+	top: 0;
+	background-color: var(--wp--preset--color--base);
+	transition: box-shadow 200ms ease;
+}
+
+.wp-site-blocks > header.wp-block-template-part.cz-stuck {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/*
+ * Gravity Forms, wearing the site's brand.
+ *
+ * Gravity Forms ships its own design system and defaults to a blue
+ * (#204ce5) that belongs to no client we have. It publishes the palette as
+ * custom properties, so re-pointing those at theme.json tokens rebrands the
+ * whole form - button, focus rings, checkboxes, validation - rather than
+ * chasing individual rules.
+ *
+ * `!important` is load-bearing and not laziness: Gravity Forms declares these
+ * on `#gform_wrapper_<id>[data-form-index="0"].gform-theme`. That carries an ID,
+ * and the selector is generated per form, so there is no author-level selector
+ * that can outrank it.
+ */
+.gform-theme.gform-theme--framework,
+.gform-theme.gform-theme--foundation {
+	--gf-color-primary: var(--wp--preset--color--primary) !important;
+	--gf-color-primary-contrast: var(--wp--preset--color--on-primary) !important;
+	--gf-color-primary-darker: var(--wp--preset--color--primary-ink) !important;
+	--gf-color-primary-lighter: var(--wp--preset--color--primary) !important;
+	--gf-color-in-ctrl-primary: var(--wp--preset--color--primary) !important;
+	--gf-color-in-ctrl-primary-contrast: var(--wp--preset--color--on-primary) !important;
+	--gf-color-in-ctrl-primary-darker: var(--wp--preset--color--primary-ink) !important;
+	--gf-radius: 6px !important;
+	--gf-ctrl-border-color: #c7c7cd !important;
+	--gf-ctrl-label-color-primary: var(--wp--preset--color--contrast) !important;
+	--gf-ctrl-label-color-secondary: var(--wp--preset--color--contrast) !important;
+}
+
+/* Tighter rows. The shipped rhythm is generous for a five-field form. */
+.gform_wrapper .gform_fields {
+	row-gap: var(--wp--preset--spacing--30);
+}
+
+/*
+ * The submit button, matched to `elements.button` in theme.json.
+ *
+ * Set here as well as through the variables above because Gravity Forms sizes
+ * its button from a separate `--gf-ctrl-btn-*` scale, which would otherwise
+ * leave it a different height and weight from every other button on the site.
+ */
+.gform_wrapper .gform_footer {
+	margin-block-start: var(--wp--preset--spacing--40);
+	padding: 0;
+}
+
+.gform_wrapper .gform_footer .gform_button {
+	width: auto;
+	min-width: 12rem;
+	padding: 0.75rem 1.5rem;
+	border: 0;
+	border-radius: 6px;
+	background-color: var(--wp--preset--color--primary);
+	color: var(--wp--preset--color--on-primary);
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--medium);
+	font-weight: 600;
+	line-height: 1.4;
+	cursor: pointer;
+	transition: background-color 150ms ease;
+}
+
+.gform_wrapper .gform_footer .gform_button:hover,
+.gform_wrapper .gform_footer .gform_button:focus {
+	background-color: var(--wp--preset--color--primary-ink);
+	color: var(--wp--preset--color--base);
+}
+
+.gform_wrapper .gform_footer .gform_button:focus-visible {
+	outline: 2px solid var(--wp--preset--color--primary-ink);
+	outline-offset: 2px;
+}

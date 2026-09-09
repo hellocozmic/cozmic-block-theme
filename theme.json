@@ -5,8 +5,8 @@
 		"appearanceTools": true,
 		"useRootPaddingAwareAlignments": true,
 		"layout": {
-			"contentSize": "48rem",
-			"wideSize": "76rem"
+			"contentSize": "52rem",
+			"wideSize": "86rem"
 		},
 		"color": {
 			"defaultPalette": false,
@@ -318,7 +318,8 @@
 				"variations": {
 					"cozmic-card": {
 						"color": {
-							"background": "var(--wp--preset--color--base)"
+							"background": "var(--wp--preset--color--base)",
+							"text": "var(--wp--preset--color--contrast)"
 						},
 						"border": {
 							"color": "#e4e4e7",
@@ -338,7 +339,8 @@
 					},
 					"cozmic-card-featured": {
 						"color": {
-							"background": "var(--wp--preset--color--base)"
+							"background": "var(--wp--preset--color--base)",
+							"text": "var(--wp--preset--color--contrast)"
 						},
 						"border": {
 							"color": "#e4e4e7",

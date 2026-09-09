@@ -57,6 +57,25 @@ function cozmic_enqueue_styles(): void {
 add_action( 'wp_enqueue_scripts', 'cozmic_enqueue_styles' );
 
 /**
+ * Front-end scripts.
+ *
+ * Deferred, and there is exactly one: the sticky header's shadow cue. Anything
+ * added here has to survive the same test - the page must still be correct
+ * with the script blocked, because a client site should never depend on
+ * JavaScript to render what it says.
+ */
+function cozmic_enqueue_scripts(): void {
+	wp_enqueue_script(
+		'cozmic-sticky-header',
+		get_template_directory_uri() . '/assets/js/sticky-header.js',
+		array(),
+		COZMIC_THEME_VERSION,
+		array( 'strategy' => 'defer', 'in_footer' => true )
+	);
+}
+add_action( 'wp_enqueue_scripts', 'cozmic_enqueue_scripts' );
+
+/**
  * Pattern categories.
  *
  * Patterns live in /patterns and are auto-registered by WordPress from their
