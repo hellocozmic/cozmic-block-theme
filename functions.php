@@ -57,12 +57,35 @@ function cozmic_enqueue_styles(): void {
 add_action( 'wp_enqueue_scripts', 'cozmic_enqueue_styles' );
 
 /**
+ * Whether the thing being viewed contains a marker string.
+ *
+ * Used to decide whether a behaviour's script is worth sending. Reads the
+ * queried post's raw content rather than the rendered output, because
+ * enqueueing has to be decided before anything renders.
+ *
+ * Only the singular case is answered honestly; an archive renders many posts
+ * and none of the current behaviours appear in one, so it returns false rather
+ * than querying every post in the loop to find out.
+ *
+ * @param string $marker Class name or other substring to look for.
+ */
+function cozmic_content_has( string $marker ): bool {
+	if ( ! is_singular() ) {
+		return false;
+	}
+
+	$post = get_post();
+
+	return $post instanceof WP_Post && str_contains( $post->post_content, $marker );
+}
+
+/**
  * Front-end scripts.
  *
- * Deferred, and there is exactly one: the sticky header's shadow cue. Anything
- * added here has to survive the same test - the page must still be correct
- * with the script blocked, because a client site should never depend on
- * JavaScript to render what it says.
+ * Both are deferred, and both have to survive the same test: the page must
+ * still be correct with the script blocked. A client site should never depend
+ * on JavaScript to render what it says. The sticky header only loses its
+ * shadow; the carousel stays a scroll-snap strip that swipes and tabs.
  */
 function cozmic_enqueue_scripts(): void {
 	wp_enqueue_script(
@@ -70,8 +93,26 @@ function cozmic_enqueue_scripts(): void {
 		get_template_directory_uri() . '/assets/js/sticky-header.js',
 		array(),
 		COZMIC_THEME_VERSION,
-		array( 'strategy' => 'defer', 'in_footer' => true )
+		array(
+			'strategy'  => 'defer',
+			'in_footer' => true,
+		)
 	);
+
+	// Only where a carousel exists. Nothing on the page needs it otherwise,
+	// and most pages have none.
+	if ( cozmic_content_has( 'cz-carousel' ) ) {
+		wp_enqueue_script(
+			'cozmic-carousel',
+			get_template_directory_uri() . '/assets/js/carousel.js',
+			array(),
+			COZMIC_THEME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'cozmic_enqueue_scripts' );
 

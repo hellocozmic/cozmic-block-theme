@@ -95,6 +95,7 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 .wp-block-site-logo img {
 	max-height: var(--wp--custom--logo-max-height, 80px);
 	width: auto;
+	transition: max-height 200ms ease;
 }
 
 /*
@@ -122,6 +123,97 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 
 .wp-site-blocks > header.wp-block-template-part.cz-stuck {
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/*
+ * The header compacts once it sticks.
+ *
+ * `!important` on the padding because the header part's block markup emits it
+ * as an inline style, which no selector can outrank. Both shrunk values are
+ * `settings.custom` tokens so a child can retune them from theme.json.
+ */
+.wp-site-blocks > header.wp-block-template-part.cz-stuck > .wp-block-group {
+	padding-top: var( --wp--custom--header-padding-stuck, 0.5rem ) !important;
+	padding-bottom: var( --wp--custom--header-padding-stuck, 0.5rem ) !important;
+}
+
+.cz-stuck .wp-block-site-logo img {
+	max-height: var( --wp--custom--logo-max-height-stuck, 56px );
+}
+
+/*
+ * Carousel.
+ *
+ * Core blocks plus three class names, never a custom block (docs D4): the
+ * markup is a Group holding a flex Group of Groups, so deactivating anything
+ * leaves ordinary readable sections rather than "this block contains
+ * unexpected content".
+ *
+ * The scrolling is CSS scroll-snap, so it swipes on touch, scrolls with a
+ * trackpad, and tabs through with a keyboard *before* any JavaScript loads.
+ * assets/js/carousel.js only adds the dots and the auto-advance. That order
+ * matters: every slide's content is in the document and reachable even if the
+ * script never runs, so nothing here can hide client content behind JS.
+ */
+.cz-carousel {
+	position: relative;
+}
+
+.cz-carousel__track {
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+	overscroll-behavior-x: contain;
+}
+
+.cz-carousel__track::-webkit-scrollbar {
+	display: none;
+}
+
+.cz-carousel__slide {
+	flex: 0 0 100%;
+	min-width: 100%;
+	scroll-snap-align: center;
+	scroll-snap-stop: always;
+}
+
+.cz-carousel__dots {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	margin-top: var(--wp--preset--spacing--40);
+}
+
+/*
+ * `currentColor` rather than a palette token: a carousel sits on a photo as
+ * often as on a white section, and inheriting the surrounding text colour is
+ * the only version that stays visible in both without being told which.
+ */
+.cz-carousel__dot {
+	width: 11px;
+	height: 11px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background-color: currentColor;
+	opacity: 0.4;
+	cursor: pointer;
+	transition: opacity 150ms ease;
+}
+
+.cz-carousel__dot:hover,
+.cz-carousel__dot:focus-visible {
+	opacity: 0.7;
+}
+
+.cz-carousel__dot[aria-current="true"] {
+	opacity: 1;
+}
+
+.cz-carousel__dot:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
 }
 
 /*
