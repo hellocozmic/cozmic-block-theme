@@ -17,15 +17,18 @@
  * three stacked sections of ordinary readable content, and there is no block
  * to deactivate that could ever orphan it.
  *
- * `flexWrap: nowrap` and a zero blockGap are load-bearing, not styling. Core's
- * flex layout wraps by default and applies blockGap as a gap, either of which
- * breaks scroll-snap alignment.
+ * The track is a plain *stacked* group here and becomes a flex strip only in
+ * style.css. Keep it that way. Declaring the flex layout in this markup means
+ * that any moment the stylesheet is older than the content - which is every
+ * moment between a REST content push and a manual theme upload - renders the
+ * slides crushed into a single row, a word per line. Stacked markup degrades to
+ * three readable panels instead.
  */
 
 ?>
 <!-- wp:group {"className":"cz-carousel","align":"full","style":{"spacing":{"margin":{"top":"0","bottom":"0"},"padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"}}},"backgroundColor":"surface","layout":{"type":"constrained"}} -->
 <div class="wp-block-group cz-carousel alignfull has-surface-background-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)">
-	<!-- wp:group {"className":"cz-carousel__track","style":{"spacing":{"blockGap":"0"}},"layout":{"type":"flex","flexWrap":"nowrap"}} -->
+	<!-- wp:group {"className":"cz-carousel__track"} -->
 	<div class="wp-block-group cz-carousel__track">
 		<!-- wp:group {"className":"cz-carousel__slide","layout":{"type":"constrained"}} -->
 		<div class="wp-block-group cz-carousel__slide">
