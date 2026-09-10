@@ -9,7 +9,7 @@
  *
  * NOT A CUSTOM BLOCK (docs D4)
  * ----------------------------
- * This is a Group holding a flex Group holding three Groups. The sliding comes
+ * This is a Group holding a Group holding three Groups. The sliding comes
  * from `cz-carousel*` classes that style.css turns into a CSS scroll-snap
  * strip, and assets/js/carousel.js adds dots and auto-advance on top.
  *

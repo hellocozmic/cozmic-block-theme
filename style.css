@@ -182,7 +182,7 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
  * Carousel.
  *
  * Core blocks plus three class names, never a custom block (docs D4): the
- * markup is a Group holding a flex Group of Groups, so deactivating anything
+ * markup is a Group holding a Group of Groups, so deactivating anything
  * leaves ordinary readable sections rather than "this block contains
  * unexpected content".
  *
