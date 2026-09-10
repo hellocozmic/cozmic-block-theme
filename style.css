@@ -7,7 +7,7 @@ Description: The Cozmic parent theme. A block theme (Full Site Editing) providin
 Requires at least: 6.7
 Tested up to: 6.8
 Requires PHP: 8.2
-Version: 0.2.2
+Version: 0.2.3
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cozmic-block-theme
@@ -327,6 +327,27 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 .cz-carousel__dot:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
+}
+
+/*
+ * Utility: hide on mobile.
+ *
+ * Opted into from the editor as an Additional CSS class, never applied by the
+ * theme on its own: whether something can go on a phone is a content decision.
+ * A carousel whose images are the point must keep them.
+ *
+ * The breakpoint is core's own columns breakpoint. Below 782px side-by-side
+ * columns stack, which is the moment a decorative image beside some text
+ * becomes a tall block of its own and pushes everything after it down a phone
+ * screen.
+ *
+ * `!important` because a display utility has to beat whatever layout rule the
+ * block it lands on happens to carry.
+ */
+@media (max-width: 781px) {
+	.cz-hide-on-mobile {
+		display: none !important;
+	}
 }
 
 /*

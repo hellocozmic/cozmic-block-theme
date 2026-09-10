@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.2.2' );
+define( 'COZMIC_THEME_VERSION', '0.2.3' );
 
 /**
  * Theme setup.
@@ -210,6 +210,44 @@ function cozmic_register_block_styles(): void {
 	);
 }
 add_action( 'init', 'cozmic_register_block_styles' );
+
+/**
+ * Anything hidden on mobile must not cost mobile bandwidth.
+ *
+ * `cz-hide-on-mobile` hides with CSS, and a hidden <img> is still downloaded
+ * unless it is lazy: the browser starts the request when it parses the tag,
+ * long before layout knows the image will never be shown. WordPress eager-loads
+ * the first few images on a page on purpose, since they are usually above the
+ * fold, so a hidden image near the top - a hero carousel's, say - cost phones
+ * the whole file for nothing.
+ *
+ * A lazy image inside a display:none box is never fetched. On desktop, where
+ * the image is visible, a lazy image already in the viewport still loads at
+ * once; all it gives up is being the page's LCP candidate, which a decorative
+ * image should never be.
+ *
+ * Runs at render_block, before WordPress's own loading optimisation on the
+ * content, which keeps an explicit loading attribute rather than overriding it.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Parsed block.
+ */
+function cozmic_lazy_hidden_on_mobile( string $block_content, array $block ): string {
+	$class = $block['attrs']['className'] ?? '';
+
+	if ( ! is_string( $class ) || ! in_array( 'cz-hide-on-mobile', preg_split( '/\s+/', $class ), true ) ) {
+		return $block_content;
+	}
+
+	$html = new WP_HTML_Tag_Processor( $block_content );
+
+	while ( $html->next_tag( 'img' ) ) {
+		$html->set_attribute( 'loading', 'lazy' );
+	}
+
+	return $html->get_updated_html();
+}
+add_filter( 'render_block', 'cozmic_lazy_hidden_on_mobile', 10, 2 );
 
 /**
  * Self-hosted updates via GitHub Releases.
