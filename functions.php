@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.2.1' );
+define( 'COZMIC_THEME_VERSION', '0.2.2' );
 
 /**
  * Theme setup.
@@ -197,6 +197,15 @@ function cozmic_register_block_styles(): void {
 		array(
 			'name'  => 'cozmic-pill',
 			'label' => __( 'Pill', 'cozmic-block-theme' ),
+		)
+	);
+
+	// Fills the first screen below the header. See style.css for the sizing.
+	register_block_style(
+		'core/cover',
+		array(
+			'name'  => 'cozmic-fill-screen',
+			'label' => __( 'Fill screen', 'cozmic-block-theme' ),
 		)
 	);
 }
