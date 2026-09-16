@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.2.3' );
+define( 'COZMIC_THEME_VERSION', '0.2.4' );
 
 /**
  * Theme setup.
