@@ -7,7 +7,7 @@ Description: The Cozmic parent theme. A block theme (Full Site Editing) providin
 Requires at least: 6.7
 Tested up to: 6.8
 Requires PHP: 8.2
-Version: 0.4.0
+Version: 0.5.0
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cozmic-block-theme
@@ -421,4 +421,48 @@ Tags: full-site-editing, block-patterns, block-styles, custom-colors, custom-log
 .gform_wrapper .gform_footer .gform_button:focus-visible {
 	outline: 2px solid var(--wp--preset--color--primary-ink);
 	outline-offset: 2px;
+}
+
+/*
+ * Archive layout: "List, image beside the text".
+ *
+ * Set per content type on Cozmic Core's Content Pages screen. PHP sets the
+ * column count to one; everything that makes it a list rather than a stack of
+ * wide cards is here, for the reason the carousel comment gives: content
+ * reaches a site over the REST API in seconds and this stylesheet arrives by
+ * hand, so any layout that lives in markup renders against the wrong CSS for
+ * as long as that gap lasts. A list that has not got its stylesheet yet is a
+ * perfectly readable stack.
+ *
+ * The image column is `auto`, not a fixed width, so an entry with no featured
+ * image gives its space back to the text instead of leaving a hole where a
+ * picture would have gone.
+ */
+.cz-archive-list .wp-block-post-template > li {
+	display: grid;
+	gap: var( --wp--preset--spacing--40 );
+	align-items: start;
+}
+
+@media ( min-width: 600px ) {
+	.cz-archive-list .wp-block-post-template > li {
+		grid-template-columns: auto minmax( 0, 1fr );
+	}
+
+	.cz-archive-list .wp-block-post-template > li > * {
+		grid-column: 2;
+		margin-block: 0;
+	}
+
+	.cz-archive-list .wp-block-post-template > li > .wp-block-post-featured-image {
+		grid-column: 1;
+		grid-row: 1 / -1;
+		width: 280px;
+		max-width: 35vw;
+	}
+
+	.cz-archive-list .wp-block-post-template > li > .wp-block-post-featured-image img {
+		width: 100%;
+		height: auto;
+	}
 }

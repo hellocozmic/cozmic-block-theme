@@ -42,13 +42,7 @@
 
 			<!-- wp:post-excerpt {"excerptLength":22} /-->
 
-			<!-- wp:buttons {"style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}},"layout":{"type":"flex"}} -->
-			<div class="wp-block-buttons" style="margin-top:var(--wp--preset--spacing--30)">
-				<!-- wp:button {"className":"is-style-outline","metadata":{"bindings":{"url":{"source":"cozmic/field","args":{"key":"cozmic_press_link"}}}}} -->
-				<div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/in-the-news/">Read the article</a></div>
-				<!-- /wp:button -->
-			</div>
-			<!-- /wp:buttons -->
+			<!-- wp:read-more {"content":"Read more"} /-->
 		<!-- /wp:post-template -->
 
 		<!-- wp:query-no-results -->

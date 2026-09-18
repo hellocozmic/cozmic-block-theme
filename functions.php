@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.4.0' );
+define( 'COZMIC_THEME_VERSION', '0.5.0' );
 
 /**
  * Theme setup.
@@ -251,7 +251,22 @@ function cozmic_lazy_hidden_on_mobile( string $block_content, array $block ): st
 add_filter( 'render_block', 'cozmic_lazy_hidden_on_mobile', 10, 2 );
 
 /**
- * Apply a page's own banner settings to the banner in page.html.
+ * Whether a parsed block carries a given class.
+ *
+ * Whole-class matching, not a substring test: `cz-banner` must not answer for
+ * `cz-archive-banner`, which is a different hook on a different template.
+ *
+ * @param array  $block Parsed block.
+ * @param string $class Class to look for.
+ */
+function cozmic_block_has_class( array $block, string $class ): bool {
+	$attr = $block['attrs']['className'] ?? '';
+
+	return is_string( $attr ) && in_array( $class, preg_split( '/\s+/', trim( $attr ) ) ?: array(), true );
+}
+
+/**
+ * Apply a page or post's own banner settings to its banner.
  *
  * Cozmic Core stores three fields per page - height, image position, and an
  * optional background video - because a block template has no conditionals and
@@ -272,18 +287,17 @@ add_filter( 'render_block', 'cozmic_lazy_hidden_on_mobile', 10, 2 );
  * @param string $block_content Rendered block HTML.
  * @param array  $block         Parsed block.
  */
-function cozmic_page_banner( string $block_content, array $block ): string {
+function cozmic_banner( string $block_content, array $block ): string {
 	if ( 'core/cover' !== ( $block['blockName'] ?? '' ) ) {
 		return $block_content;
 	}
 
-	$class = $block['attrs']['className'] ?? '';
-	if ( ! is_string( $class ) || ! str_contains( $class, 'cz-page-banner' ) ) {
+	if ( ! cozmic_block_has_class( $block, 'cz-banner' ) ) {
 		return $block_content;
 	}
 
 	// The fields are Core's. Without it the theme keeps its standard banner.
-	if ( ! is_page() || ! function_exists( 'cozmic_core_field' ) ) {
+	if ( ! is_singular() || ! function_exists( 'cozmic_core_field' ) ) {
 		return $block_content;
 	}
 
@@ -347,7 +361,7 @@ function cozmic_page_banner( string $block_content, array $block ): string {
 
 	return $block_content;
 }
-add_filter( 'render_block', 'cozmic_page_banner', 10, 2 );
+add_filter( 'render_block', 'cozmic_banner', 10, 2 );
 
 /**
  * Swap a banner's image background for a looping video.
@@ -382,6 +396,216 @@ function cozmic_banner_video( string $html, string $url, string $position ): str
 
 	return $html;
 }
+
+/**
+ * What the archive being viewed has been set to look like.
+ *
+ * An archive has no post behind it, so its banner image, introduction and
+ * layout come from Cozmic Core's Content Pages settings instead of from meta.
+ * Returns an empty array anywhere that question does not apply, which is what
+ * every caller below checks first.
+ *
+ * @return array<string, string>
+ */
+function cozmic_archive_settings(): array {
+	static $cache = null;
+
+	if ( null !== $cache ) {
+		return $cache;
+	}
+
+	$cache = array();
+
+	if ( ! is_post_type_archive() || ! function_exists( 'cozmic_core_archive' ) || ! function_exists( 'cozmic_core_post_types' ) ) {
+		return $cache;
+	}
+
+	$object = get_queried_object();
+	if ( ! $object instanceof WP_Post_Type ) {
+		return $cache;
+	}
+
+	$slug = cozmic_core_post_types()[ $object->name ] ?? '';
+	if ( '' === $slug ) {
+		return $cache;
+	}
+
+	$cache = array(
+		'image'  => cozmic_core_archive( $slug, 'image' ),
+		'intro'  => cozmic_core_archive( $slug, 'intro' ),
+		'layout' => cozmic_core_archive( $slug, 'layout' ),
+	);
+
+	return $cache;
+}
+
+/**
+ * Put the archive's chosen image behind its banner.
+ *
+ * The cover cannot use `useFeaturedImage` here the way a single's banner does,
+ * because an archive has no featured image to use. The image is inserted the
+ * same way core inserts a featured one: between the overlay and the inner
+ * container, so core's own stylesheet positions and dims it with nothing added.
+ *
+ * Resolved back to an attachment where possible, so the markup carries a srcset
+ * and a phone downloads a phone-sized file. A URL from outside the library still
+ * works, it just ships one size.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Parsed block.
+ */
+function cozmic_archive_banner( string $block_content, array $block ): string {
+	if ( 'core/cover' !== ( $block['blockName'] ?? '' ) || ! cozmic_block_has_class( $block, 'cz-archive-banner' ) ) {
+		return $block_content;
+	}
+
+	$url = cozmic_archive_settings()['image'] ?? '';
+	if ( '' === $url ) {
+		return $block_content;
+	}
+
+	$attachment = attachment_url_to_postid( $url );
+	$image      = $attachment
+		? wp_get_attachment_image(
+			$attachment,
+			'full',
+			false,
+			array(
+				'class'           => 'wp-block-cover__image-background',
+				'data-object-fit' => 'cover',
+			)
+		)
+		: sprintf( '<img class="wp-block-cover__image-background" src="%s" alt="" data-object-fit="cover" />', esc_url( $url ) );
+
+	if ( '' === $image ) {
+		return $block_content;
+	}
+
+	if ( 1 === preg_match( '/<div\b[^>]*wp-block-cover__inner-container/', $block_content, $match, PREG_OFFSET_CAPTURE ) ) {
+		$offset = (int) $match[0][1];
+
+		return substr( $block_content, 0, $offset ) . $image . substr( $block_content, $offset );
+	}
+
+	return $block_content;
+}
+add_filter( 'render_block', 'cozmic_archive_banner', 10, 2 );
+
+/**
+ * The archive's introduction, or nothing at all.
+ *
+ * The paragraph sits in the template carrying placeholder text, because a
+ * template cannot ask whether an introduction was written. Here it either gets
+ * the real words or is removed outright - an empty paragraph would still take
+ * up its margin and leave a gap nobody asked for.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Parsed block.
+ */
+function cozmic_archive_intro( string $block_content, array $block ): string {
+	if ( 'core/paragraph' !== ( $block['blockName'] ?? '' ) || ! cozmic_block_has_class( $block, 'cz-archive-intro' ) ) {
+		return $block_content;
+	}
+
+	$intro = trim( cozmic_archive_settings()['intro'] ?? '' );
+
+	if ( '' === $intro ) {
+		return '';
+	}
+
+	return (string) preg_replace_callback(
+		'/(<p\b[^>]*>)(.*?)(<\/p>)/s',
+		static fn( array $match ) => $match[1] . nl2br( esc_html( $intro ) ) . $match[3],
+		$block_content,
+		1
+	);
+}
+add_filter( 'render_block', 'cozmic_archive_intro', 10, 2 );
+
+/**
+ * The archive's chosen layout.
+ *
+ * Column count is a block *attribute*, and core generates the grid CSS from it
+ * during render - so unlike the banner, this one is set before rendering rather
+ * than rewritten after. Filtering the rendered HTML instead would mean parsing
+ * and rewriting a generated class name, which is core's to change.
+ *
+ * "List" is one column here and two columns in the stylesheet: the image beside
+ * the text rather than above it. Doing the side-by-side part in CSS keeps the
+ * markup identical for every layout, which matters on a stack where content and
+ * stylesheet reach a site by different routes at different speeds.
+ *
+ * @param array $parsed_block Parsed block, before rendering.
+ * @return array
+ */
+function cozmic_archive_layout( array $parsed_block ): array {
+	if ( 'core/post-template' !== ( $parsed_block['blockName'] ?? '' ) ) {
+		return $parsed_block;
+	}
+
+	$layout = cozmic_archive_settings()['layout'] ?? '';
+	if ( '' === $layout ) {
+		return $parsed_block;
+	}
+
+	$columns = 'list' === $layout ? 1 : (int) $layout;
+	if ( $columns < 1 || $columns > 4 ) {
+		return $parsed_block;
+	}
+
+	$parsed_block['attrs']['layout'] = array(
+		'type'        => 'grid',
+		'columnCount' => $columns,
+	);
+
+	return $parsed_block;
+}
+add_filter( 'render_block_data', 'cozmic_archive_layout' );
+
+/**
+ * Tell the stylesheet which archive layout is in play.
+ *
+ * A body class rather than one on the block: `core/post-template` renders its
+ * own container and the class it needs is only ever read by CSS, so there is
+ * nothing to gain from threading it through the block's attributes.
+ *
+ * @param array<int, string> $classes Body classes.
+ * @return array<int, string>
+ */
+function cozmic_archive_body_class( array $classes ): array {
+	$layout = cozmic_archive_settings()['layout'] ?? '';
+
+	if ( 'list' === $layout ) {
+		$classes[] = 'cz-archive-list';
+	}
+
+	return $classes;
+}
+add_filter( 'body_class', 'cozmic_archive_body_class' );
+
+/**
+ * Drop the "read the original" button when there is nothing to read.
+ *
+ * The button's link is bound to the mention's source URL, and a binding with no
+ * value leaves the block's own fallback link in place - which would send a
+ * reader somewhere arbitrary. A template cannot ask whether the field is set,
+ * so the answer happens here: no link, no button.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Parsed block.
+ */
+function cozmic_press_source_button( string $block_content, array $block ): string {
+	if ( 'core/buttons' !== ( $block['blockName'] ?? '' ) || ! cozmic_block_has_class( $block, 'cz-press-source' ) ) {
+		return $block_content;
+	}
+
+	if ( ! function_exists( 'cozmic_core_field' ) || '' === cozmic_core_field( 'cozmic_source_url' ) ) {
+		return '';
+	}
+
+	return $block_content;
+}
+add_filter( 'render_block', 'cozmic_press_source_button', 10, 2 );
 
 /**
  * Self-hosted updates via GitHub Releases.
