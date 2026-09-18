@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.3.0' );
+define( 'COZMIC_THEME_VERSION', '0.4.0' );
 
 /**
  * Theme setup.
@@ -154,9 +154,10 @@ add_action( 'init', 'cozmic_register_pattern_categories' );
  */
 function cozmic_unregister_absent_patterns(): void {
 	$patterns = array(
-		'cozmic/services'  => 'cozmic_service',
-		'cozmic/events'    => 'cozmic_event',
-		'cozmic/portfolio' => 'cozmic_project',
+		'cozmic/services'    => 'cozmic_service',
+		'cozmic/events'      => 'cozmic_event',
+		'cozmic/portfolio'   => 'cozmic_project',
+		'cozmic/in-the-news' => 'cozmic_press',
 	);
 
 	$registry = WP_Block_Patterns_Registry::get_instance();
