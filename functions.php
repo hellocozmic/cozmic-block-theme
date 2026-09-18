@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'COZMIC_THEME_VERSION', '0.2.4' );
+define( 'COZMIC_THEME_VERSION', '0.3.0' );
 
 /**
  * Theme setup.
@@ -248,6 +248,139 @@ function cozmic_lazy_hidden_on_mobile( string $block_content, array $block ): st
 	return $html->get_updated_html();
 }
 add_filter( 'render_block', 'cozmic_lazy_hidden_on_mobile', 10, 2 );
+
+/**
+ * Apply a page's own banner settings to the banner in page.html.
+ *
+ * Cozmic Core stores three fields per page - height, image position, and an
+ * optional background video - because a block template has no conditionals and
+ * only administrators may swap a page's template, so a variant per template
+ * would be unreachable for the Editors who write pages. The data lives in Core;
+ * what it looks like is this theme's business, which is why the rendering is
+ * here and not there.
+ *
+ * It rewrites rendered HTML rather than block attributes on purpose. A cover's
+ * height lives in its *saved* inline style, and its video background in saved
+ * markup - only the featured image is server-rendered - so editing attributes
+ * earlier in the pipeline would change nothing a visitor can see.
+ *
+ * Every branch is skipped when the fields are empty, so a site whose pages are
+ * all standard pays one string comparison per cover and renders byte for byte
+ * what it did before.
+ *
+ * @param string $block_content Rendered block HTML.
+ * @param array  $block         Parsed block.
+ */
+function cozmic_page_banner( string $block_content, array $block ): string {
+	if ( 'core/cover' !== ( $block['blockName'] ?? '' ) ) {
+		return $block_content;
+	}
+
+	$class = $block['attrs']['className'] ?? '';
+	if ( ! is_string( $class ) || ! str_contains( $class, 'cz-page-banner' ) ) {
+		return $block_content;
+	}
+
+	// The fields are Core's. Without it the theme keeps its standard banner.
+	if ( ! is_page() || ! function_exists( 'cozmic_core_field' ) ) {
+		return $block_content;
+	}
+
+	$style = cozmic_core_field( 'cozmic_banner_style' );
+
+	if ( 'none' === $style ) {
+		return '';
+	}
+
+	$focus = cozmic_core_field( 'cozmic_banner_focus' );
+	$video = cozmic_core_field( 'cozmic_banner_video' );
+
+	if ( '' === $style && '' === $focus && '' === $video ) {
+		return $block_content;
+	}
+
+	$position = match ( $focus ) {
+		'top'    => '50% 20%',
+		'bottom' => '50% 80%',
+		default  => '',
+	};
+
+	$html = new WP_HTML_Tag_Processor( $block_content );
+
+	if ( $html->next_tag( array( 'class_name' => 'wp-block-cover' ) ) ) {
+		if ( 'tall' === $style || 'full' === $style ) {
+			$inline = (string) preg_replace(
+				'/\s*min-height\s*:[^;]*;?/i',
+				'',
+				(string) $html->get_attribute( 'style' )
+			);
+			$inline = trim( trim( $inline ), ';' );
+
+			/*
+			 * Full height reuses the existing "Fill screen" cover style, which
+			 * sizes from CSS and subtracts the header and admin bar. Its own
+			 * min-height has to go first, because an inline style beats it.
+			 */
+			if ( 'tall' === $style ) {
+				$inline = '' === $inline ? 'min-height:520px' : $inline . ';min-height:520px';
+			} else {
+				$html->add_class( 'is-style-cozmic-fill-screen' );
+			}
+
+			$html->set_attribute( 'style', $inline );
+		}
+
+		if ( '' !== $position ) {
+			while ( $html->next_tag( 'img' ) ) {
+				$html->set_attribute( 'style', 'object-position:' . $position . ';' );
+				$html->set_attribute( 'data-object-position', $position );
+			}
+		}
+	}
+
+	$block_content = $html->get_updated_html();
+
+	if ( '' !== $video ) {
+		$block_content = cozmic_banner_video( $block_content, $video, $position );
+	}
+
+	return $block_content;
+}
+add_filter( 'render_block', 'cozmic_page_banner', 10, 2 );
+
+/**
+ * Swap a banner's image background for a looping video.
+ *
+ * The markup matches what the cover block saves for a video background, so the
+ * result styles itself from core's own stylesheet with nothing added here.
+ *
+ * Spliced by offset rather than with `preg_replace`, because the replacement
+ * carries a client-supplied URL and a `$1` inside one would be read as a
+ * backreference.
+ *
+ * @param string $html     Rendered cover HTML.
+ * @param string $url      Video URL.
+ * @param string $position CSS object-position, or an empty string for the default.
+ */
+function cozmic_banner_video( string $html, string $url, string $position ): string {
+	$html = (string) preg_replace( '/<img[^>]*wp-block-cover__image-background[^>]*>/', '', $html, 1 );
+
+	$video = sprintf(
+		'<video class="wp-block-cover__video-background intrinsic-ignore" autoplay muted loop playsinline src="%s" data-object-fit="cover"%s></video>',
+		esc_url( $url ),
+		'' === $position
+			? ''
+			: sprintf( ' style="object-position:%s" data-object-position="%s"', esc_attr( $position ), esc_attr( $position ) )
+	);
+
+	if ( 1 === preg_match( '/<div\b[^>]*wp-block-cover__inner-container/', $html, $match, PREG_OFFSET_CAPTURE ) ) {
+		$offset = (int) $match[0][1];
+
+		return substr( $html, 0, $offset ) . $video . substr( $html, $offset );
+	}
+
+	return $html;
+}
 
 /**
  * Self-hosted updates via GitHub Releases.
